@@ -6,12 +6,12 @@ pipeline {
     agent { docker { image 'python:3.7.9' } }
     environment {
         CREDENTIALS = credentials('agol_geoplatform')
-        echo 'agol username: $CREDENTIALS.Username'
         }
 
     stages {
         stage('build') {
             steps {
+                echo 'my username: $env.CREDENTIALS.Username'
                 sh 'python --version'
                 sh '''
                 python -m venv .venv
