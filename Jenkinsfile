@@ -27,13 +27,13 @@ pipeline {
 //         }
         stage('build') {
             steps {
-                echo 'my username ${env.agol_creds_CREDENTIALS_USR}'
+                echo 'my username $agol_creds_USR}'
                 sh 'python --version'
                 sh '''
                 python -m venv .venv
                 . .venv/bin/activate
                 pip install -r requirements.txt
-                python update_ipynb.py agol_un=$username agol_pw=$password ipynb_file=R9_fires_notebook_TestUpdate.ipynb
+                python update_ipynb.py agol_un=$agol_creds_USR agol_pw=$agol_creds_PSW ipynb_file=R9_fires_notebook_TestUpdate.ipynb
                 '''
             }
         }
