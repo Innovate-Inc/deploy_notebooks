@@ -24,6 +24,11 @@ pipeline {
         }
         stage('build') {
             steps {
+                withCredentials([
+                    usernamePassword(credentialsId: 'agol_geoplatform',
+                      usernameVariable: 'username',
+                      passwordVariable: 'password')
+                ])
                 echo 'my username: $env.CREDENTIALS.Username'
                 sh 'python --version'
                 sh '''
