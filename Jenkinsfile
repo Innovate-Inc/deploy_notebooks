@@ -29,7 +29,6 @@ pipeline {
                       usernameVariable: 'username',
                       passwordVariable: 'password')
                 ])
-                echo 'my username: $env.CREDENTIALS.Username'
                 sh 'python --version'
                 sh '''
                 python -m venv .venv
