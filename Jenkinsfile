@@ -4,11 +4,24 @@ milestone(buildNumber)
 
 pipeline {
     agent { docker { image 'python:3.7.9' } }
-    environment {
-        CREDENTIALS = credentials('agol_geoplatform')
-        }
 
     stages {
+        stage('usernamePassword') {
+          steps {
+            script {
+              withCredentials([
+                usernamePassword(credentialsId: 'agol_geoplatform',
+                  usernameVariable: 'username',
+                  passwordVariable: 'password')
+              ]) {
+                print 'username=' + username + 'password=' + password
+
+                print 'username.collect { it }=' + username.collect { it }
+                print 'password.collect { it }=' + password.collect { it }
+              }
+            }
+          }
+        }
         stage('build') {
             steps {
                 echo 'my username: $env.CREDENTIALS.Username'
