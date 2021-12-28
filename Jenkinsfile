@@ -4,31 +4,30 @@ milestone(buildNumber)
 
 pipeline {
     agent { docker { image 'python:3.7.9' } }
+    environment {
+          agol_creds = credentials('agol_geoplatform')
+    }
 
     stages {
-        stage('usernamePassword') {
-          steps {
-            script {
-              withCredentials([
-                usernamePassword(credentialsId: 'agol_geoplatform',
-                  usernameVariable: 'username',
-                  passwordVariable: 'password')
-              ]) {
-                print 'username=' + username + 'password=' + password
-
-                print 'username.collect { it }=' + username.collect { it }
-                print 'password.collect { it }=' + password.collect { it }
-              }
-            }
-          }
-        }
+//         stage('usernamePassword') {
+//           steps {
+//             script {
+//               withCredentials([
+//                 usernamePassword(credentialsId: 'agol_geoplatform',
+//                   usernameVariable: 'username',
+//                   passwordVariable: 'password')
+//               ]) {
+//                 print 'username=' + username + 'password=' + password
+//
+//                 print 'username.collect { it }=' + username.collect { it }
+//                 print 'password.collect { it }=' + password.collect { it }
+//               }
+//             }
+//           }
+//         }
         stage('build') {
             steps {
-                withCredentials([
-                    usernamePassword(credentialsId: 'agol_geoplatform',
-                      usernameVariable: 'username',
-                      passwordVariable: 'password')
-                ])
+                echo 'my username ${env.agol_creds_CREDENTIALS_USR}'
                 sh 'python --version'
                 sh '''
                 python -m venv .venv
