@@ -2,9 +2,6 @@ import os
 from arcgis.gis import GIS
 import argparse
 
-import creds
-
-
 def update_ipynb(ipynb_file, gis, agol_id=None, item_properties=None):
     fname = os.path.basename(ipynb_file).split('.')[0]
     item = None
@@ -38,9 +35,9 @@ def main():
     args = parser.parse_args()
     print(f'username: {args.agol_un}')
     print(f'password: {args.agol_pw}')
-    un = creds.un
-    pw = creds.pw
-    gis = GIS(username=un, password=pw)
+    # un = creds.un
+    # pw = creds.pw
+    gis = GIS(username=args.agol_un, password=args.agol_pw)
     update_ipynb(ipynb_file='C:\Data\Py2Notebook\R9_Fires_Notebook_TestUpdate.ipynb', gis=gis)
 
 if __name__ == '__main__':
