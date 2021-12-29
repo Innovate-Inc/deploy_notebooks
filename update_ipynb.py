@@ -41,7 +41,6 @@ def main():
     parser.add_argument('agol_pw', help='AGOL/Geoplatform password')
     parser.add_argument('ipynb_file', help='relative path to ipynb file')
     args = parser.parse_args()
-    print("_".join([x for x in args.agol_un]))
     print(f'username: {args.agol_un}')
     print(f'password: {args.agol_pw}')
     gis = GIS(username=args.agol_un, password=args.agol_pw)

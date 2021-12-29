@@ -8,32 +8,15 @@ pipeline {
     environment {
           agol_creds = credentials('agol_geoplatform')
     }
-
     stages {
-//         stage('usernamePassword') {
-//           steps {
-//             script {
-//               withCredentials([
-//                 usernamePassword(credentialsId: 'agol_geoplatform',
-//                   usernameVariable: 'username',
-//                   passwordVariable: 'password')
-//               ]) {
-//                 print 'username=' + username + 'password=' + password
-//
-//                 print 'username.collect { it }=' + username.collect { it }
-//                 print 'password.collect { it }=' + password.collect { it }
-//               }
-//             }
-//           }
-//         }
         stage('build') {
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
                     sh 'python --version'
                     sh 'pip install -r requirements.txt --user'
                     sh 'python -c "import sys; print(sys.path)"'
-                    sh 'jupytext --to notebook R9_Fires.py'
-                    sh('python update_ipynb.py $agol_creds_USR $agol_creds_PSW R9_Fires.ipynb')
+                    // sh 'jupytext --to notebook R9_Fires.py'
+                    sh('python update_ipynb.py $agol_creds_USR $agol_creds_PSW R9_Fires.py')
                 }
             }
         }
