@@ -39,7 +39,8 @@ def main():
     # un = creds.un
     # pw = creds.pw
     gis = GIS(username=args.agol_un, password=args.agol_pw)
-    update_ipynb(ipynb_file='C:\Data\Py2Notebook\R9_Fires_Notebook_TestUpdate.ipynb', gis=gis)
+    # update_ipynb(ipynb_file='C:\Data\Py2Notebook\R9_Fires_Notebook_TestUpdate.ipynb', gis=gis)
+    update_ipynb(ipynb_file=args.ipynb_file, gis=gis)
 
 if __name__ == '__main__':
     main()
