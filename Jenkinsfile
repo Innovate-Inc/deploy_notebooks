@@ -1,3 +1,4 @@
+
 def buildNumber = env.BUILD_NUMBER as int
 if (buildNumber > 1) milestone(buildNumber - 1)
 milestone(buildNumber)
@@ -27,14 +28,14 @@ pipeline {
 //         }
         stage('build') {
             steps {
-                echo 'my username $agol_creds_USR}'
-                sh 'python --version'
-                sh '''
-                python -m venv .venv
-                . .venv/bin/activate
-                pip install -r requirements.txt
-                python update_ipynb.py agol_un=$agol_creds_USR agol_pw=$agol_creds_PSW ipynb_file=R9_fires_notebook_TestUpdate.ipynb
-                '''
+                withEnv(["HOME=${env.WORKSPACE}"]) {
+                    sh 'python --version'
+                    sh 'python -m venv venv'
+                    sh '. venv/bin/activate'
+                    sh 'pip install -r requirements.txt'
+                    sh 'python -c "import sys; print(sys.path)"'
+                    sh('python update_ipynb.py agol_un=$agol_creds_USR agol_pw=$agol_creds_PSW ipynb_file=R9_fires_notebook_TestUpdate.ipynb')
+                }
             }
         }
     }
