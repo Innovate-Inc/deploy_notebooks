@@ -30,9 +30,7 @@ pipeline {
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
                     sh 'python --version'
-                    sh 'python -m venv venv'
-                    sh '. venv/bin/activate'
-                    sh 'pip install -r requirements.txt'
+                    sh 'pip install -r requirements.txt --user'
                     sh 'python -c "import sys; print(sys.path)"'
                     sh 'jupytext --to notebook R9_Fires.py'
                     sh('python update_ipynb.py $agol_creds_USR $agol_creds_PSW R9_Fires.ipynb')
