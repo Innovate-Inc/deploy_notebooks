@@ -34,7 +34,8 @@ pipeline {
                     sh '. venv/bin/activate'
                     sh 'pip install -r requirements.txt'
                     sh 'python -c "import sys; print(sys.path)"'
-                    sh('python update_ipynb.py $agol_creds_USR $agol_creds_PSW R9_fires_notebook_TestUpdate.ipynb')
+                    sh 'jupytext --to notebook R9_Fires.py'
+                    sh('python update_ipynb.py $agol_creds_USR $agol_creds_PSW R9_Fires.ipynb')
                 }
             }
         }
