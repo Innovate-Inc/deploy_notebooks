@@ -12,7 +12,6 @@ String getChangedFilesList() {
             }
         }
     }
-
     return changedFiles
 
 }
@@ -30,19 +29,17 @@ pipeline {
                 echo getChangedFilesList()
             }
         }
-
         stage('dynamic ipynb deploy') {
             steps {
                 script {
                     notebook_scripts.each {nbscript ->
                         stage("deploy ipynb $nbscript") {
-//                             when { changeset "**/${nbscript}"}
                             if (getChangedFilesList().contains(nbscript)){
                                 withEnv(["HOME=${env.WORKSPACE}"]) {
                                 sh 'python --version'
                                 sh 'pip install -r requirements.txt --user'
                                 sh 'python -c "import sys; print(sys.path)"'
-                                sh('python update_ipynb.py $agol_creds_USR $agol_creds_PSW ${file}')
+                                sh('python update_ipynb.py $agol_creds_USR $agol_creds_PSW ${nbscript}')
                                 }
                             }
 
@@ -52,29 +49,6 @@ pipeline {
                 }
             }
         }
-
-//         stage('deploy_ipynb') {
-//             when { changeset "**/${notebook_script}"}
-//                 steps {
-//                     script {
-//                         notebooks = ["R9_FiresNotebookDeploy.py"]
-//                         for (file in notebooks) {
-//                             echo '${file}'
-//                             if (changeset "**/${file}") {
-//                                 withEnv(["HOME=${env.WORKSPACE}"]) {
-//                                 sh 'python --version'
-//                                 sh 'pip install -r requirements.txt --user'
-//                                 sh 'python -c "import sys; print(sys.path)"'
-//                                 // sh 'jupytext --to notebook R9_Fires.py'
-//                                 sh('python update_ipynb.py $agol_creds_USR $agol_creds_PSW ${file}')
-//
-//                             }
-//                         }
-//
-//                     }
-//                 }
-//             }
-//         }
     }
     post {
         always {
