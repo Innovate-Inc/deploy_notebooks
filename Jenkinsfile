@@ -16,8 +16,11 @@ pipeline {
                 }
             }
         }
-        stage ('cleanWs') {
-        cleanWs()
+    }
+    post {
+        always {
+
+            cleanWs()
         }
     }
 }
