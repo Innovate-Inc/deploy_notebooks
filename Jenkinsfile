@@ -7,6 +7,11 @@ pipeline {
           notebook_script = "R9_FiresNotebookDeploy.py"
     }
     stages {
+        stage('checkout'){
+            steps{
+                checkout scm
+            }
+        }
         stage('deploy_ipynb') {
             when { changeset "**/*.py"}
                 steps {
