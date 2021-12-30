@@ -7,13 +7,13 @@ pipeline {
           notebook_script = "R9_FiresNotebookDeploy.py"
     }
     stages {
-        stage('checkout'){
+        stage('checkout scm'){
             steps{
                 checkout scm
             }
         }
         stage('deploy_ipynb') {
-            when { changeset "**/*.py"}
+            when { changeset "**/${notebook_script}"}
                 steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
                     sh 'python --version'
