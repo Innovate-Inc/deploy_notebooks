@@ -1,33 +1,41 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# pip install openpyxl
-# pip install arcgis==1.8.1 # b/c buffering a point returns a multipolygon at > 1.8.3 ?!?!?!
+#%%
+pip install openpyxl
+
+#%%
+pip install slack_sdk
 
 # %% [markdown]
-# Added this markdowncell
+## Added this markdowncell, and now is 3:30
 
-
+#%%
 import re
 import os
 import sys
 import time
 from random import random
 
+#%%
+import re
+import os
+import sys
+import time
 import openpyxl
 from openpyxl.styles import PatternFill, Font
 from openpyxl.utils.cell import get_column_letter
 from datetime import date, timedelta, datetime as dt
 from timeit import default_timer as timer
 from arcgis.features import FeatureLayer, Feature, FeatureSet
-from arcgis.geometry import Geometry, Polygon, Point
+from arcgis.geometry import Geometry, Polygon, Point, union
 from arcgis.geometry.filters import intersects
 from arcgis.geometry.functions import buffer, project
 from io import BytesIO
 from uuid import uuid4
 import base64
 from arcgis.gis import GIS
-from arcgis import geometry
+# from arcgis import geometry
 import urllib
 import requests
 import json
@@ -36,6 +44,11 @@ from tenacity import retry, stop_after_attempt, after_log
 import logging
 from slack_sdk.webhook import WebhookClient
 
+#%%
+import arcgis
+arcgis.__version__
+
+#%%
 FIRE_REPORT_SETTINGS = {
     'PERIMETER_SERVICE': 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/USA_Wildfires_v1/FeatureServer/1',
     'IRWIN_SERVICE': 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/USA_Wildfires_v1/FeatureServer/0',
@@ -55,15 +68,16 @@ FIRE_REPORT_SETTINGS = {
 
 # Parameters
 analyst = "R9 GIS Tech Center"
-# gis = GIS('home')
-# token = gis._con.token
+gis = GIS('home')
+token = gis._con.token
 # if fcntl module error, token may be bad...
-token = 'JrnrWBWeDz_rQLmmT2gAO5aDrK5kuaAvJYR1jZ0Vi-E3omdGXXajWknXNJ3tpjGDIJGGfmFl5KnDlAmqgQdQ9Vr977t2SV1iLhDGqpJssb1UypEY76LuXh0U4MPPQyzMISFjnWqEYGFULs9sp3AuoFdlhKAkgHvK3gIgXFDV-Mj8Q0UNXy80pfC2QWAIWx6Uf6TgMAjdFKoMOMIJ_LLzSaTwJp5u8g3eNdJvI3hNTyo.'
-gis = GIS(token=token)
-
+# token = '0jiLJa6vnejxYEnsBnsioIp3B3SkOn_op3FcFzQU9SGOXf2MOWyB6VP5L4JkD19ZV8OnfnrVuVt6o9Hz8UDZUI8HkYOLw7vOALU3LYE8aVPmNSN00qYsCskJglPeBFthY3uImJMbpktiLIzacXJxcdv_YIYnX-HWcE9sIkyA3NVt4nfRNx5_zAaHPfXwHIK2Fu7_bN8ovd2jUiBA-XZNLUOJ1HCk-S9oW1Rif1YQr6U.'
+# gis = GIS(token=token)
 url = "https://hooks.slack.com/services/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"
 webhook = WebhookClient(url)
 
+
+#%%
 # helper functions
 ########################################################################################################################
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
@@ -677,7 +691,6 @@ def generate_fire_report(irwin_id, perimeter_id):
         out_msg = out_msg.replace('<', '_').replace('>', '_')
         print(out_msg)
         reportstatus = 'info' if fire_incident.fire is None else 'error'
-        response['display'] = 0
         response['facilities']['total'] = 0
         response['error_msg'] = out_msg
 
@@ -690,12 +703,6 @@ def generate_fire_report(irwin_id, perimeter_id):
         # if facilities: create feature
         file_dict = None
         if response['facilities']['total'] > 0:
-            adj_total = response['facilities']['Active RMP Facilities'] + response['facilities'][
-                'NationalPriorityListPoint_R9_2019_R9'] + response['facilities'][
-                            'NationalPriorityListBoundaryTypes_R9_2020_R9']
-            response['display'] = 1 if adj_total > 0 and fire_incident.fire.attributes[
-                'acres'] >= 10 and fire_incident.fire.attributes.get('PercentContained', 0) != 100 else 0
-            # todo - archive here? along with display?
             if reportstatus == 'successful':
                 file_dict = {
                     "contentType": "application/octet-stream",
@@ -732,7 +739,7 @@ def upsert_msg(table_id, attributes, message_id=None, id_field='GlobalID'):
     return t.edit_features(**edit_features)
 
 
-def update_unarchived_fires(irwin_fires, perimeter_fires):
+def update_unarchived_fires(irwin_fires, perimeter_fires, force_update=False):
     print('update unarchived')
     notifiable_fires_query = f"NotificationConfigurationID = '{FIRE_REPORT_SETTINGS['FIRE_CONFIG_ID']}'"
     notifiable_fires = load_features_json(url=FIRE_REPORT_SETTINGS['NOTIFIABLE_FEATURES'], where=notifiable_fires_query,
@@ -742,7 +749,7 @@ def update_unarchived_fires(irwin_fires, perimeter_fires):
         return None
     for f in notifiable_fires:
         f['attributes']['Data'] = json.loads(f['attributes']['Data'])
-    del f
+
     # get latest from IRWIN for existing
     irwin_ids_fallen_off = []
     fire_updates = []
@@ -771,7 +778,7 @@ def update_unarchived_fires(irwin_fires, perimeter_fires):
                 else:
                     # irwin match doesn't exist, but perimeter id does - handled later
                     irwin_ids_fallen_off.append(fire.get('attributes').get('Data').get('IRWINID'))
-                if fire != og_fire:
+                if force_update or fire != og_fire:
                     [fire_updates.remove(x) for x in fire_updates if
                      x['attributes'].get('GlobalID') == fire['attributes'].get('GlobalID')]
                     fire_updates.append(fire)
@@ -799,7 +806,7 @@ def update_unarchived_fires(irwin_fires, perimeter_fires):
                     if fire['attributes']['Data'].get('acres', None) is None or fire['attributes'].get('Data').get(
                         'acres') == '':
                         fire['attributes']['Data']['acres'] = p['attributes'].get('GISAcres')
-                    if fire != og_fire:
+                    if force_update or fire != og_fire:
                         [fire_updates.remove(x) for x in fire_updates if
                          x['attributes'].get('GlobalID') == fire['attributes'].get('GlobalID')]
                         fire_updates.append(fire)
@@ -824,7 +831,7 @@ def update_unarchived_fires(irwin_fires, perimeter_fires):
                     'IncidentName'].upper()
                 fire['attributes']['Data']['acres'] = p['attributes']['GISAcres']
 
-                if fire != og_fire:
+                if force_update or fire != og_fire:
                     [fire_updates.remove(x) for x in fire_updates if
                      x['attributes'].get('GlobalID') == fire['attributes'].get('GlobalID')]
                     fire_updates.append(fire)
@@ -852,6 +859,7 @@ def update_unarchived_fires(irwin_fires, perimeter_fires):
         fire_geom = fire['geometry'] if isinstance(fire['geometry'], Geometry) else Geometry(fire['geometry'])
         if fire['attributes']['Archived'] is not None:
             fire['attributes']['Display'] = 0
+            incident_report = None
         else:
             incident_perim = fire.get('attributes').get('Data').get('perimeter_id')
             incident_results, incident_report = generate_fire_report(None, incident_perim) if incident_perim \
@@ -869,7 +877,9 @@ def update_unarchived_fires(irwin_fires, perimeter_fires):
             tribes = get_tribes(fire_geom)
             fire['attributes']['Data']['tribes'] = tribes
             fire['attributes']['Display'] = display_fire(fire)
+        # update
         fire['attributes']['Data'] = json.dumps(fire['attributes'].get('Data'))
+
         update_res = update_feature(Feature(geometry=fire['geometry'], attributes=fire['attributes']),
                                     feature_id=fire['attributes']['GlobalID'],
                                     target_url=FIRE_REPORT_SETTINGS['NOTIFIABLE_FEATURES'], attachment=incident_report)
@@ -877,24 +887,27 @@ def update_unarchived_fires(irwin_fires, perimeter_fires):
 
 def display_fire(fire_object):
     # returns 0, or 1 depending on criteria below
-    minimal_acres = fire_object['attributes']['Data'].get('acres', 0) < 10
-    archived = True if fire_object['attributes'].get('Archived', None) is not None else False
-    contained = fire_object['attributes']['Data'].get('percent_contained', 0) == 100
+    if isinstance(fire_object, Feature):
+        feature_attributes = fire_object._attributes
+        feature_attributes['Data'] = json.loads(feature_attributes['Data'])
+    else:
+        feature_attributes = fire_object['attributes']
+    minimal_acres = True if feature_attributes['Data'].get('acres') is None else feature_attributes['Data'].get('acres', 0) < 10
+    archived = True if feature_attributes.get('Archived', None) is not None else False
+    contained = feature_attributes['Data'].get('percent_contained', 0) == 100
     if any([minimal_acres, archived, contained]):
         return 0
-    tribes = fire_object['attributes']['Data'].get('tribes')
+    tribes = feature_attributes['Data'].get('tribes')
     if tribes:
         return 1
-    facilities = 0
-    if fire_object['attributes']['Data'].get('current_results'):
-        facilities = fire_object['attributes']['Data']['current_results']['facilities'].get('total', 0)
-    if facilities:
-        active_rmp = fire_object['attributes']['Data']['current_results']['facilities'].get('Active RMP Facilities', 0)
-        npl_points = fire_object['attributes']['Data']['current_results']['facilities'].get('NationalPriorityListPoint_R9_2019_R9', 0)
-        npl_polys = fire_object['attributes']['Data']['current_results']['facilities'].get('NationalPriorityListBoundaryTypes_R9_2020_R9', 0)
-        facilities += active_rmp+npl_polys+npl_points
-    if facilities:
-        return 1
+    if feature_attributes['Data'].get('current_results'):
+        active_rmp = feature_attributes['Data']['current_results']['facilities'].get('Active RMP Facilities', 0)
+        npl_points = feature_attributes['Data']['current_results']['facilities'].get('NationalPriorityListPoint_R9_2019_R9', 0)
+        npl_polys = feature_attributes['Data']['current_results']['facilities'].get('NationalPriorityListBoundaryTypes_R9_2020_R9', 0)
+        facilities = active_rmp+npl_polys+npl_points
+        if facilities:
+            return 1
+    return 0
 
 def get_perimeters(where=None, geometry=None, calc_centroids=False):
     perimeters = load_features_json(FIRE_REPORT_SETTINGS['PERIMETER_SERVICE'], where, geometry)
@@ -1122,14 +1135,14 @@ def main():
         conus_where = "STATE_ABBR='CA' OR STATE_ABBR='AZ' OR STATE_ABBR='NV'"
         r9_features = load_features_json(FIRE_REPORT_SETTINGS['BOUNDARIES_SERVICE'], where=conus_where)
         # union into single poly
-        r9_geom = geometry.union(3857, [x['geometry'] for x in r9_features])
-        r9_geom['spatialReference'] = {'wkid': 102100, 'latestWkid': 3857}
+#         r9_geom = union(3857, [x['geometry'] for x in r9_features])
+#         r9_geom['spatialReference'] = {'wkid': 102100, 'latestWkid': 3857}
         # irwin_where = f"IncidentTypeCategory = 'WF' AND FireDiscoveryDateTime > CURRENT_TIMESTAMP - {days}"
         irwin_where = "IncidentTypeCategory = 'WF'"
-        irwin_incidents = get_irwin_info(where_statement=irwin_where, geometry_filter=r9_geom)
-        perimeter_incidents = get_perimeters(geometry=r9_geom, calc_centroids=True)
+        irwin_incidents = [item for feat in r9_features for item in get_irwin_info(where_statement=irwin_where, geometry_filter=feat['geometry'])]
+        perimeter_incidents = [item for feat in r9_features for item in get_perimeters(geometry=feat['geometry'], calc_centroids=True)]
         # update existing
-        update_unarchived_fires(irwin_incidents, perimeter_incidents)
+        update_unarchived_fires(irwin_incidents, perimeter_incidents, force_update=True)
         update_custom_poi(auth_token=token)
 
         # get fires we know about and notified already
@@ -1140,17 +1153,7 @@ def main():
         #     Fire.objects.filter(perimeter_id__isnull=False).values_list('perimeter_id', flat=True))
         known_perimeter_ids = [x['attributes'].get('Data').get('perimeter_id') for x in fire_features if
                                x['attributes'].get('Data').get('perimeter_id', None) is not None]
-
-        # check IRWIN first for new fires
-        # timestamp = int((datetime.now() - timedelta(days=days)).timestamp())*1000
-        # irwin_where = f"IncidentTypeCategory = 'WF' AND FireDiscoveryDateTime > {timestamp}"
-
-        # r9_geom_inter = intersects(r9_geom,
-        #                            r9_geom['spatialReference'])
-        # irwin_pts = FeatureLayer(FIRE_REPORT_SETTINGS['IRWIN_SERVICE']).query(where=irwin_where,
-        #                                                                       geometry_filter=r9_geom_inter)
-        # print(irwin_pts)
-
+        ################################################################################################################
         new_incidents = []
         # prevent duplicate irwin points and just get most recently modified
         for x in irwin_incidents:
@@ -1182,13 +1185,6 @@ def main():
                 if new_incidents[index]['acres'] is None:
                     new_incidents[index]['acres'] = p['attributes']['GISAcres']
 
-        # get new perimeters that do NOT have a irwinid
-
-        # newer_than = dt.utcnow() - timedelta(days=days)
-        # newer_than = int(newer_than.timestamp() * 1000)
-
-        # perims_missing_irwin = [p for p in perimeter_incidents if p['attributes'].get('IRWINID') is None and
-        #                         p['attributes'].get('CreateDate') > newer_than]
         perims_missing_irwin = [p for p in perimeter_incidents if p['attributes'].get('IRWINID') is None]
         perimeters += perims_missing_irwin
 
@@ -1200,9 +1196,6 @@ def main():
                            'geometry': p.get('geometry'),
                            'acres': p['attributes']['GISAcres']} for p in perimeters
                           if p['attributes']['GeometryID'] not in known_perimeter_ids]
-
-        # new_ids = [p['attributes'].get('IRWINID', '').replace('{', '').replace('}', '').lower() for p in perimeters if
-        #            p['attributes']['IRWINID'] is not None and p['attributes'].get('IRWINID', '') != '{----}']
         ######################################################################################################################
         # log newly found fires
         new_fires = []
@@ -1214,34 +1207,25 @@ def main():
             incident_results, incident_report = generate_fire_report(incident_irwin, incident_perim)
             # create new feature
             feat = Feature(attributes={})
-            # if incident.get('centroid', None) is not None:
-            #     feat_geom = Point({"x": incident.get('centroid')[0], "y": incident.get('centroid')[1],
-            #                        'spatialReference': {'wkid': 4326}})
-            # else:
-            #     feat_geom = incident.get('_geometry')
-            #     feat_geom['spatialReference'] = {"wkid": 4326}
-            #     feat_geom = Point(feat_geom)
-            # feat.geometry = feat_geom
             feat.geometry = incident_results.get('feature_geometry')
             del incident_results['feature_geometry']
             feat.attributes['Name'] = incident.get('IncidentName').upper()
             feat.attributes['Retrieved'] = incident_results['RETRIEVED']
-            feat.attributes['Display'] = incident_results.get('display', 0)
             incident['current_results'] = incident_results
             incident['counties'] = get_counties(feat.geometry)
             tribes = get_tribes(feat.geometry)
             incident['tribes'] = tribes
-            if tribes and feat.attributes.get('Archived') is None:
-                feat.attributes['Display'] = 1
             feat.attributes['Data'] = json.dumps(incident)
+            feat.attributes['Display'] = display_fire(feat)
             feat.attributes['NotificationConfigurationID'] = FIRE_REPORT_SETTINGS['FIRE_CONFIG_ID']
 
             # new_fires.append(feat)
             created_ft = update_feature(feat, target_url=FIRE_REPORT_SETTINGS['NOTIFIABLE_FEATURES'],
                                         attachment=incident_report)
+            print(f'Created {feat.attributes["Name"]} feature')
             print(created_ft)
         print('main done')
-        response = webhook.send(text="R9 Fire Notifications Notebook Run: SUCCESS")
+        # response = webhook.send(text="R9 Fire Notifications Notebook Run: SUCCESS")
         return
     except Exception as e:
         print(e)
@@ -1254,6 +1238,7 @@ def main():
         raise Exception(e)
 
 
+#%%
 main()
 
 
