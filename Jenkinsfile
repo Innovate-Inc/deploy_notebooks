@@ -8,7 +8,7 @@ pipeline {
     }
     stages {
         stage('deploy_ipynb') {
-            when { changeset '$notebook_script'}
+            when { changeset "**/*.py"}
                 steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
                     sh 'python --version'
