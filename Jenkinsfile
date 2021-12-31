@@ -1,6 +1,6 @@
 //  Pipeline to update agol content
 
-def notebook_scripts = ['R9_FiresNotebookDeploy.py', 'test']
+def notebook_scripts = ['R9_FiresNotebookDeploy.py']
 // returns a list of changed files
 @NonCPS
 String getChangedFilesList() {
@@ -22,13 +22,6 @@ pipeline {
     environment {
           agol_creds = credentials('agol_geoplatform')
     }
-    stages {
-        stage('checkout scm'){
-            steps{
-                checkout scm
-                echo getChangedFilesList()
-            }
-        }
         stage('dynamic stages') {
             steps {
                 script {
@@ -39,7 +32,7 @@ pipeline {
                                 sh 'python --version'
                                 sh 'pip install -r requirements.txt --user'
                                 sh 'python -c "import sys; print(sys.path)"'
-                                sh('python update_ipynb.py $agol_creds_USR $agol_creds_PSW $nbscript')
+                                sh("python update_ipynb.py $agol_creds_USR $agol_creds_PSW $nbscript")
                                 }
                             }
                         }
