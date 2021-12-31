@@ -22,6 +22,7 @@ pipeline {
     environment {
           agol_creds = credentials('agol_geoplatform')
     }
+    stages {
         stage('dynamic stages') {
             steps {
                 script {
