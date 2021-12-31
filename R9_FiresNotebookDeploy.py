@@ -10,12 +10,6 @@ pip install slack_sdk
 # %% [markdown]
 ## Markdowncell here..
 
-#%%
-import re
-import os
-import sys
-import time
-from random import random
 
 #%%
 import re
