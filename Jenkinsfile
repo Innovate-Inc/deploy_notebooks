@@ -1,5 +1,6 @@
-def notebook_scripts = ['R9_FiresNotebookDeploy.py', 'test']
+//  Pipeline to update agol content
 
+def notebook_scripts = ['R9_FiresNotebookDeploy.py', 'test']
 // returns a list of changed files
 @NonCPS
 String getChangedFilesList() {
@@ -25,11 +26,10 @@ pipeline {
         stage('checkout scm'){
             steps{
                 checkout scm
-
                 echo getChangedFilesList()
             }
         }
-        stage('dynamic ipynb deploy') {
+        stage('dynamic stages') {
             steps {
                 script {
                     notebook_scripts.each {nbscript ->
@@ -39,20 +39,17 @@ pipeline {
                                 sh 'python --version'
                                 sh 'pip install -r requirements.txt --user'
                                 sh 'python -c "import sys; print(sys.path)"'
-                                sh('python update_ipynb.py $agol_creds_USR $agol_creds_PSW ${nbscript}')
+                                sh('python update_ipynb.py $agol_creds_USR $agol_creds_PSW $nbscript')
                                 }
                             }
-
                         }
                     }
-
                 }
             }
         }
     }
     post {
         always {
-
             cleanWs()
         }
     }

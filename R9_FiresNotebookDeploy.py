@@ -8,14 +8,8 @@ pip install openpyxl
 pip install slack_sdk
 
 # %% [markdown]
-## Markdowncell here..
+## Markdowncell here.. change
 
-#%%
-import re
-import os
-import sys
-import time
-from random import random
 
 #%%
 import re
