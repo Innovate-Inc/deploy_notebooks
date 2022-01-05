@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-# coding: utf-8
 
+# install
 #%%
 pip install openpyxl
 
@@ -10,7 +9,9 @@ pip install slack_sdk
 # %% [markdown]
 ## Markdowncell here
 
+# end install
 
+# import
 #%%
 import re
 import os
@@ -29,7 +30,6 @@ from io import BytesIO
 from uuid import uuid4
 import base64
 from arcgis.gis import GIS
-# from arcgis import geometry
 import urllib
 import requests
 import json
@@ -42,6 +42,9 @@ from slack_sdk.webhook import WebhookClient
 import arcgis
 arcgis.__version__
 
+# import end
+
+# config
 #%%
 FIRE_REPORT_SETTINGS = {
     'PERIMETER_SERVICE': 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/USA_Wildfires_v1/FeatureServer/1',
@@ -70,16 +73,14 @@ token = gis._con.token
 url = "https://hooks.slack.com/services/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"
 webhook = WebhookClient(url)
 
-
-#%%
-# helper functions
-########################################################################################################################
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# config end
 
-# @retry(stop=stop_after_attempt(3), after=after_log(logger, logging.DEBUG))
-
+#%%
+# functions
+########################################################################################################################
 @retry(stop=stop_after_attempt(3), after=after_log(logger, logging.DEBUG))
 def load_feature_set(url, where, orderby=None, recordcount=None, fields="*", returngeometry='true'):
     fl = FeatureLayer(url)
@@ -1231,6 +1232,7 @@ def main():
         response = webhook.send(text=error_msg)
         raise Exception(e)
 
+# functions end
 
 #%%
 main()
