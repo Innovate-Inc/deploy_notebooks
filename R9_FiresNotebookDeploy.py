@@ -8,7 +8,6 @@ pip install slack_sdk
 
 # %% [markdown]
 ## Markdowncell here
-
 # end install
 
 # import

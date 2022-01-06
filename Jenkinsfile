@@ -45,15 +45,21 @@ pipeline {
             }
         }
     }
-    failure {
-    // alert
-    }
-    success {
-    // alert
-    }
     post {
         always {
             cleanWs()
+        }
+        failure {
+            steps {
+                echo 'failure'
+            }
+        // alert
+        }
+        success {
+            steps {
+                echo 'success'
+            }
+        // alert
         }
     }
 }

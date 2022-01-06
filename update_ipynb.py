@@ -2,6 +2,16 @@ import os
 from arcgis.gis import GIS
 import argparse
 import jupytext
+import re
+
+def clean_py_script(input_py):
+    f = open(input_py, 'r').read()
+    lines = f.split('\n')
+    clean = '\n'.join([l for l in lines if not l.startswith('pip') and not l.startswith('main()')])
+    fname = input_py.replace('.py', '_clean.py')
+    with open(fname, 'w') as f:
+        f.write(clean)
+    return fname
 
 
 def update_ipynb(input_file, gis, agol_id=None, item_properties=None):
