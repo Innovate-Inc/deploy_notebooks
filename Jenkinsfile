@@ -50,15 +50,11 @@ pipeline {
             cleanWs()
         }
         failure {
-            steps {
-                echo 'failure'
-            }
+            echo 'failure'
         // alert
         }
         success {
-            steps {
-                echo 'success'
-            }
+            echo 'success'
         // alert
         }
     }
