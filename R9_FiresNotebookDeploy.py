@@ -7,7 +7,7 @@ pip install openpyxl
 pip install slack_sdk
 
 # %% [markdown]
-## Markdowncell here !!!
+## Markdowncell here
 # end install
 
 # import

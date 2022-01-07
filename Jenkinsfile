@@ -49,14 +49,14 @@ pipeline {
         always {
             cleanWs()
         }
-        failure {
-            echo 'failure'
-        // alert
-        }
-        success {
-            echo 'success'
-        // alert
-        }
+//         failure {
+//             echo 'failure'
+//         // alert
+//         }
+//         success {
+//             echo 'success'
+//         // alert
+//         }
     }
 }
 
