@@ -32,8 +32,8 @@ pipeline {
                                     withEnv(["HOME=${env.WORKSPACE}"]) {
                                     sh 'python --version'
                                     sh 'pip install -r requirements.txt --user'
-                                    sh 'python -c "from update_ipynb import clean_py_script; clean_py_script(\'${nbscript}\')"'
-                                    sh 'pytest tests/'
+//                                     sh 'python -c "from update_ipynb import clean_py_script; clean_py_script(\'${nbscript}\')"'
+//                                     sh 'pytest tests/'
                                     sh 'python -c "import sys; print(sys.path)"'
                                     sh("python update_ipynb.py $agol_creds_USR $agol_creds_PSW $nbscript")
                                     }
