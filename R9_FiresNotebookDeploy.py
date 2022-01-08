@@ -40,11 +40,10 @@ from slack_sdk.webhook import WebhookClient
 #%%
 import arcgis
 arcgis.__version__
-
 # import end
 
-# config
 #%%
+# config
 FIRE_REPORT_SETTINGS = {
     'PERIMETER_SERVICE': 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/USA_Wildfires_v1/FeatureServer/1',
     'IRWIN_SERVICE': 'https://services9.arcgis.com/RHVPKKiFTONKtxq3/ArcGIS/rest/services/USA_Wildfires_v1/FeatureServer/0',
