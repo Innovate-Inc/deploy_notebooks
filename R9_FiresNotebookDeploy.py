@@ -63,9 +63,7 @@ FIRE_REPORT_SETTINGS = {
 }
 
 # Parameters
-analyst = "R9 GIS Tech Center"
-gis = GIS('home')
-token = gis._con.token
+
 # if fcntl module error, token may be bad...
 # token = '0jiLJa6vnejxYEnsBnsioIp3B3SkOn_op3FcFzQU9SGOXf2MOWyB6VP5L4JkD19ZV8OnfnrVuVt6o9Hz8UDZUI8HkYOLw7vOALU3LYE8aVPmNSN00qYsCskJglPeBFthY3uImJMbpktiLIzacXJxcdv_YIYnX-HWcE9sIkyA3NVt4nfRNx5_zAaHPfXwHIK2Fu7_bN8ovd2jUiBA-XZNLUOJ1HCk-S9oW1Rif1YQr6U.'
 # gis = GIS(token=token)
@@ -1116,6 +1114,9 @@ def update_custom_poi(auth_token, id_field='GlobalID'):
 @retry(stop=stop_after_attempt(2), after=after_log(logger, logging.DEBUG))
 def main():
     try:
+        analyst = "R9 GIS Tech Center"
+        gis = GIS('home')
+        token = gis._con.token
         # print(f'main, days={days}')
         ####################################################################################################################
 

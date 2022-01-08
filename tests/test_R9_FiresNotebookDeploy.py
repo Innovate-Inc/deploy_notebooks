@@ -1,13 +1,9 @@
-from arcgis.geometry import Point, Polygon
-import os
+cleaned = __import__('R9_FiresNotebookDeploy_clean')
+print('testing here')
 
-
-def pytest_sessionstart(session):
-    print('BEFORE')
-    from update_ipynb import clean_py_script
-    clean_py_script(os.path.basename(__file__))
-def test_buffer_miles():
-    p = Point({"x" : -118.15, "y" : 33.80, "spatialReference" : {"wkid" : 4326}})
-    cleaned = __import__('R9_FiresNotebookDeploy_clean')
-    buffer_10 = cleaned.buffer_miles(p, in_wkid = 4326)
-    assert isinstance(buffer_10, Polygon)
+def test_format_global():
+    # from R9_FiresNotebookDeploy_clean import format_global
+    assert cleaned.format_global('123oiuTTTB', braces=True) == '{123oiuTTTB}'
+    assert cleaned.format_global('123oiuTTTB', braces=False) == '123oiuTTTB'
+    assert cleaned.format_global('{aaBBCCdd123!}', braces=False) == 'aaBBCCdd123!'
+    assert cleaned.format_global('{aaBBCCdd123!}', braces=True) == '{aaBBCCdd123!}'

@@ -27,16 +27,16 @@ pipeline {
                 script {
                     notebook_scripts.each {nbscript ->
                         stage("deploy ipynb $nbscript") {
-                            if (getChangedFilesList().contains(nbscript)){
+                            // if (getChangedFilesList().contains(nbscript)){
                                 withEnv(["HOME=${env.WORKSPACE}"]) {
                                 sh 'python --version'
                                 sh 'pip install -r requirements.txt --user'
                                 sh "python -c 'from update_ipynb import clean_py_script; clean_py_script(\"$nbscript\")'"
-                                sh "python -m pytest tests/$nbscript"
+                                sh "python -m pytest tests/test_$nbscript"
                                 sh 'python -c "import sys; print(sys.path)"'
                                 sh("python update_ipynb.py $agol_creds_USR $agol_creds_PSW $nbscript")
                                 }
-                            }
+                            // }
                         }
                     }
                 }
