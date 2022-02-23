@@ -33,10 +33,10 @@ pipeline {
                                     sh 'python --version'
                                     sh "python -c 'import os; os.chdir(\"./notebooks\")'"
                                     sh 'pip install -r requirements.txt --user'
-                                    sh "python -c 'from update_ipynb import clean_py_script; clean_py_script(\"$nbscript\")'"
+
                                     sh "python -m pytest tests/test_$nbscript"
                                     sh 'python -c "import sys; print(sys.path)"'
-                                    sh("python update_ipynb.py $agol_creds_USR $agol_creds_PSW $nbscript")
+                                    sh "python -c 'from update_ipynb import update_ipynb; update_ipynb($nbscript, $agol_creds_USR, $agol_creds_PSW, input_func=[\"func.py\"]'"
                                     }
                                 // }
                             }
