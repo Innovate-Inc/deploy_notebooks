@@ -24,7 +24,8 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
     lines = py_script_contents.split('\n')
     if input_func:
         for func_file in input_func:
-            import_line = [l for l in lines if func_file.split('.')[0] in l and 'import' in l]
+
+            import_line = [l for l in lines if func_file.split('/')[1].split('.')[0] in l and 'import' in l]
             if import_line:
                 import_line = import_line[0]
                 with open(func_file, 'r') as file:
