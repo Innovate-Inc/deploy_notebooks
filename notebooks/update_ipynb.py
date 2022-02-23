@@ -2,19 +2,40 @@ import os
 from arcgis.gis import GIS
 import argparse
 import jupytext
-import re
 
-def clean_py_script(input_py):
+def clean_py_script(input_py, output_py=None):
     f = open(input_py, 'r').read()
     lines = f.split('\n')
     clean = '\n'.join([l for l in lines if not l.startswith('pip') and not l.startswith('main()')])
-    fname = input_py.replace('.py', '_clean.py')
+    # fname = input_py.replace('.py', '_clean.py')
+    fname = 'cleaned_notebook.py' if not output_py else output_py
     with open(fname, 'w') as f:
         f.write(clean)
     return fname
 
 
-def update_ipynb(input_file, gis, agol_id=None, item_properties=None):
+def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=None, input_func=[]):
+    if input_func is None:
+        input_func = []
+    gis = GIS(username=agol_un, password=agol_pw)
+    py_script = open(input_file, 'r')
+    py_script_contents = py_script.read()
+    py_script.close()
+    lines = py_script_contents.split('\n')
+    if input_func:
+        for func_file in input_func:
+            import_line = [l for l in lines if func_file.split('.')[0] in l and 'import' in l]
+            if import_line:
+                import_line = import_line[0]
+                with open(func_file, 'r') as file:
+                    file_contents = file.read()
+                    edits = py_script_contents.replace(import_line, '\n'+file_contents+'\n')
+                    with open(input_file, 'w') as py_script:
+                        py_script.write(edits)
+
+                # file.close()
+    # f.close()
+
     fname = os.path.basename(input_file).split('.')[0]
     if os.path.basename(input_file).split('.')[1] == "py":
         input_py = jupytext.read(input_file)
@@ -45,7 +66,14 @@ def update_ipynb(input_file, gis, agol_id=None, item_properties=None):
         item = gis.content.add(item_properties=item_properties, data=input_file)
     return item
 
-# todo - share with notebook group
+
+# def get_agol_token(username, password):
+#     gis = GIS(username=username, password=password)
+#     token = gis._con.token
+#     if not token:
+#         raise Exception('no valid token')
+#     return token
+
 
 def main():
     parser = argparse.ArgumentParser()

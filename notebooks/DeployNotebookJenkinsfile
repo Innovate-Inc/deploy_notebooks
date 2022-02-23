@@ -1,5 +1,5 @@
 //  Pipeline to update agol content
-def notebook_scripts = ['R9_FiresNotebookDeploy.py']
+def notebook_scripts = ['R9_Fires.py']
 // returns a list of changed files
 @NonCPS
 String getChangedFilesList() {
@@ -31,6 +31,7 @@ pipeline {
                                 // if (getChangedFilesList().contains(nbscript)){
                                     withEnv(["HOME=${env.WORKSPACE}"]) {
                                     sh 'python --version'
+                                    sh "python -c 'import os; os.chdir(\"./notebooks\")'"
                                     sh 'pip install -r requirements.txt --user'
                                     sh "python -c 'from update_ipynb import clean_py_script; clean_py_script(\"$nbscript\")'"
                                     sh "python -m pytest tests/test_$nbscript"
