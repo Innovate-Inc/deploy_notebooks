@@ -3,15 +3,15 @@ from arcgis.gis import GIS
 import argparse
 import jupytext
 
-def clean_py_script(input_py, output_py=None):
-    f = open(input_py, 'r').read()
-    lines = f.split('\n')
-    clean = '\n'.join([l for l in lines if not l.startswith('pip') and not l.startswith('main()')])
-    # fname = input_py.replace('.py', '_clean.py')
-    fname = 'cleaned_notebook.py' if not output_py else output_py
-    with open(fname, 'w') as f:
-        f.write(clean)
-    return fname
+# def clean_py_script(input_py, output_py=None):
+#     f = open(input_py, 'r').read()
+#     lines = f.split('\n')
+#     clean = '\n'.join([l for l in lines if not l.startswith('pip') and not l.startswith('main()')])
+#     # fname = input_py.replace('.py', '_clean.py')
+#     fname = 'cleaned_notebook.py' if not output_py else output_py
+#     with open(fname, 'w') as f:
+#         f.write(clean)
+#     return fname
 
 
 def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=None, input_func=[]):
@@ -24,7 +24,6 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
     lines = py_script_contents.split('\n')
     if input_func:
         for func_file in input_func:
-
             import_line = [l for l in lines if func_file.split('/')[1].split('.')[0] in l and 'import' in l]
             if import_line:
                 import_line = import_line[0]
@@ -74,17 +73,3 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
 #     if not token:
 #         raise Exception('no valid token')
 #     return token
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('agol_un', help='AGOL/Geoplatform username')
-    parser.add_argument('agol_pw', help='AGOL/Geoplatform password')
-    parser.add_argument('notebook_file', help='relative path to ipynb or py file')
-    args = parser.parse_args()
-    gis = GIS(username=args.agol_un, password=args.agol_pw)
-    update_ipynb(input_file=args.notebook_file, gis=gis)
-
-if __name__ == '__main__':
-    main()
-
