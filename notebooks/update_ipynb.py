@@ -36,21 +36,23 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
                 # file.close()
     # f.close()
 
-    fname = os.path.basename(input_file).split('.')[0]
+    basename = os.path.basename(input_file).split('.')[0]
+    ipynb_output = input_file.replace('.py', '.ipynb')
     if os.path.basename(input_file).split('.')[1] == "py":
         input_py = jupytext.read(input_file)
-        ipynb_name = fname + '.ipynb'
-        jupytext.write(input_py, ipynb_name)
-        input_file = input_file.replace(os.path.basename(input_file), ipynb_name)
-        fname = os.path.basename(input_file).split('.')[0]
-    print(fname)
+        # ipynb_name = fname + '.ipynb'
+        jupytext.write(input_py, ipynb_output)
+        input_file = ipynb_output
+        # fname = os.path.basename(input_file).split('.')[0]
     item = None
+    print(f'ipynb: {input_file}')
+    print(f'basename: {basename}')
     # if agol_id then update existing
     if agol_id:
         item = gis.content.get(agol_id)
     else:
-        search = gis.content.search(f"title:{fname}", item_type='Notebook')
-        search = [x for x in search if x.title == fname]
+        search = gis.content.search(f"title:{basename}", item_type='Notebook')
+        search = [x for x in search if x.title == basename]
         if search:
             item = search[0]
     if item:
@@ -59,11 +61,12 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
         item.update(data=input_file, item_properties=item_properties)
     else:
         if not item_properties:
-            item_properties = {'title': fname,
+            item_properties = {'title': basename,
                           'type': 'Notebook',
-                               'tags': f'{fname},notebook,autodeploy'}
+                               'tags': f'{basename},notebook,autodeploy'}
         print('creating new notebook')
         item = gis.content.add(item_properties=item_properties, data=input_file)
+    print(item)
     return item
 
 
