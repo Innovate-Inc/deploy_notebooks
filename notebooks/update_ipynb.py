@@ -42,10 +42,10 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
         input_py = jupytext.read(input_file)
         # ipynb_name = fname + '.ipynb'
         jupytext.write(input_py, ipynb_output)
-        input_file = ipynb_output
-        # fname = os.path.basename(input_file).split('.')[0]
+    if not os.path.exists(ipynb_output):
+        raise Exception('error generating ipynb')
     item = None
-    print(f'ipynb: {input_file}')
+    print(f'ipynb: {ipynb_output}')
     print(f'basename: {basename}')
     # if agol_id then update existing
     if agol_id:
@@ -58,14 +58,14 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
     if item:
         # update
         print(f'updating existing notebook {item.title}')
-        item.update(data=input_file, item_properties=item_properties)
+        item.update(data=ipynb_output, item_properties=item_properties)
     else:
         if not item_properties:
             item_properties = {'title': basename,
                           'type': 'Notebook',
                                'tags': f'{basename},notebook,autodeploy'}
         print('creating new notebook')
-        item = gis.content.add(item_properties=item_properties, data=input_file)
+        item = gis.content.add(item_properties=item_properties, data=ipynb_output)
     print(item)
     return item
 
