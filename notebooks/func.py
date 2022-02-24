@@ -816,7 +816,7 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
                     file_contents = file.read()
                     utc_now = dt.utcnow().strftime('%x at %X UTC')
                     markdown = f"\n# %% [markdown] \n ##Updated {utc_now}\n"
-                    edits = py_script_contents.replace(import_line, '\n' + file_contents + '\n')
+                    edits = markdown + py_script_contents.replace(import_line, '\n' + file_contents + '\n')
 
                     with open(input_file, 'w') as py_script:
                         py_script.write(edits)
