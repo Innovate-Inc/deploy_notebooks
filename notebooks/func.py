@@ -1,5 +1,4 @@
 # %%
-
 import jupytext
 import re
 import os
@@ -24,7 +23,6 @@ import json
 from copy import deepcopy
 from tenacity import retry, stop_after_attempt, after_log
 import logging
-
 
 # %%
 # helper functions
@@ -562,8 +560,6 @@ def update_unarchived_fires(irwin_fires, perimeter_fires, config_settings: dict,
                 del incident_results['feature_geometry']
             fire['attributes']['Data']['current_results'] = incident_results
             fire['attributes']['Retrieved'] = incident_results['RETRIEVED']
-            # fire['attributes']['Display'] = incident_results.get('display', 0)
-            # fire_geom = fire['geometry'] if isinstance(fire['geometry'], Geometry) else Geometry(fire['geometry'])
 
             fire['attributes']['Data']['counties'] = get_counties(fire_geom, config_settings['COUNTY_SERVICE'])
             tribes = get_tribes(fire_geom, config_settings['TRIBAL_LANDS'])
@@ -815,8 +811,8 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
                 with open(func_file, 'r') as file:
                     file_contents = file.read()
                     utc_now = dt.utcnow().strftime('%x at %X UTC')
-                    markdown = f"\n# %% [markdown] ##Updated {utc_now}\n"
-                    edits = markdown + py_script_contents.replace(import_line, '\n' + file_contents + '\n')
+                    markdown = f"\n# %% [markdown] \n ##Updated {utc_now}\n"
+                    edits = markdown + py_script_contents.replace(import_line, file_contents + '\n')
 
                     with open(input_file, 'w') as py_script:
                         py_script.write(edits)

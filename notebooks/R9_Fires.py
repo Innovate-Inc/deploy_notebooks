@@ -9,8 +9,8 @@ from notebooks.func import *
 
 # %%
 import sys
-from datetime import date, timedelta, datetime as dt
-from arcgis.features import FeatureLayer, Feature, FeatureSet
+from datetime import datetime as dt
+from arcgis.features import Feature
 from arcgis.gis import GIS
 import json
 from tenacity import retry, stop_after_attempt, after_log
@@ -159,7 +159,6 @@ def main():
                           if p['attributes']['GeometryID'] not in known_perimeter_ids]
         ######################################################################################################################
         # log newly found fires
-        new_fires = []
         for incident in new_incidents:
             if incident.get('acres', None) is None or incident.get('acres', 0) < 10:
                 continue
@@ -176,13 +175,10 @@ def main():
             feat.attributes['Retrieved'] = incident_results['RETRIEVED']
             incident['current_results'] = incident_results
             incident['counties'] = get_counties(feat.geometry)
-            tribes = get_tribes(feat.geometry)
-            incident['tribes'] = tribes
+            incident['tribes'] = get_tribes(feat.geometry)
             feat.attributes['Data'] = json.dumps(incident)
             feat.attributes['Display'] = display_fire(feat)
             feat.attributes['NotificationConfigurationID'] = FIRE_REPORT_SETTINGS['FIRE_CONFIG_ID']
-
-            # new_fires.append(feat)
             created_ft = update_feature(feat, target_url=FIRE_REPORT_SETTINGS['NOTIFIABLE_FEATURES'],
                                         attachment=incident_report)
             print(f'Created {feat.attributes["Name"]} feature')
