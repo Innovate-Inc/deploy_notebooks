@@ -31,12 +31,10 @@ pipeline {
                                 // if (getChangedFilesList().contains(nbscript)){
                                     withEnv(["HOME=${env.WORKSPACE}"]) {
                                     sh 'python --version'
-                                    sh "python -c 'import os; os.chdir(\"./notebooks\")'"
                                     sh 'pip install -r notebooks/requirements.txt --user'
-
                                     sh "python -m pytest notebooks/tests"
                                     sh 'python -c "import sys; print(sys.path)"'
-                                    sh "python -c 'from notebooks.update_ipynb import update_ipynb; update_ipynb(\"$nbscript\", \"$agol_creds_USR\", \"$agol_creds_PSW\", input_func=[\"notebooks/func.py\"])'"
+                                    sh "python -c 'from notebooks.func import update_ipynb; update_ipynb(\"$nbscript\", \"$agol_creds_USR\", \"$agol_creds_PSW\", input_func=[\"notebooks/func.py\"])'"
                                     }
                                 // }
                             }
