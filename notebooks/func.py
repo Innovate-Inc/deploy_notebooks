@@ -25,6 +25,7 @@ from copy import deepcopy
 from tenacity import retry, stop_after_attempt, after_log
 import logging
 
+
 # %%
 # helper functions
 ########################################################################################################################
@@ -244,6 +245,7 @@ def populate_sheet(workbook, sheet, lyr_details: dict, fire_name, layer):
                 if row_index % 2 != 0:
                     _cell.fill = alternate_fill
 
+
 def removeRows(target_lyr, deletes, target_field):
     # target_lyr.features = [x for x in target_lyr.features if x.attributes[target_field] not in deletes]
     for f in target_lyr.features:
@@ -276,11 +278,13 @@ def generate_fire_report(irwin_id, perimeter_id, token, config_settings: dict):
             return None
         if irwin_id:
             # query irwin layer
-            fire_incident = get_irwin_info(config_settings['IRWIN_SERVICE'], where_statement=f"{config_settings['IRWIN_ID_FIELD']} = '{irwin_id}'")
+            fire_incident = get_irwin_info(config_settings['IRWIN_SERVICE'],
+                                           where_statement=f"{config_settings['IRWIN_ID_FIELD']} = '{irwin_id}'")
             # fire_incident = FireIncident(irwinID=irwin_id)
             response['IRWINID'] = irwin_id
         if perimeter_id:
-            fire_incident = get_perimeters(config_settings['PERIMETER_SERVICE'], where=f"{config_settings['PERIMETER_ID_FIELD']} = '{perimeter_id}'")
+            fire_incident = get_perimeters(config_settings['PERIMETER_SERVICE'],
+                                           where=f"{config_settings['PERIMETER_ID_FIELD']} = '{perimeter_id}'")
             # fire_incident = FireIncident(perimeterID=perimeter_id)
             response['perimeter_id'] = perimeter_id
             if fire_incident and fire_incident[0]['attributes'].get(config_settings['PERIMETER_IRWIN_FIELD']):
@@ -296,7 +300,8 @@ def generate_fire_report(irwin_id, perimeter_id, token, config_settings: dict):
         fire_incident['buffer'] = buffer_miles(fire_incident['geometry'], distance=2000)
         response['FireBufferExtent'] = get_extent(fire_incident['buffer'])
         # fire feature id
-        fire_id = fire_incident['attributes'].get('LocalIncidentID') or fire_incident['attributes'].get('UniqueFireIdentifier')
+        fire_id = fire_incident['attributes'].get('LocalIncidentID') or fire_incident['attributes'].get(
+            'UniqueFireIdentifier')
         fire_name = fire_incident['attributes'].get('IncidentName')
         print(f'{fire_name}: {fire_id}')
         ################################################################################################################
@@ -333,8 +338,10 @@ def generate_fire_report(irwin_id, perimeter_id, token, config_settings: dict):
                 print(f'processing {str(ptLayer)}')
                 response['facilities'][fl_name] = 0
                 # returns 2 layers  [fire, and 10 mi buffer intersections]
-                boundary_intersects = get_intersect(service_url=ptLayer['url'], input_geom=fire_incident['geometry'], token=token)
-                buffer_intersects = get_intersect(service_url=ptLayer['url'], input_geom=fire_incident['buffer'], token=token)
+                boundary_intersects = get_intersect(service_url=ptLayer['url'], input_geom=fire_incident['geometry'],
+                                                    token=token)
+                buffer_intersects = get_intersect(service_url=ptLayer['url'], input_geom=fire_incident['buffer'],
+                                                  token=token)
                 lyrs = [boundary_intersects, buffer_intersects]
                 # lyrs = fire_incident.intersect(ptLayer['url'], token)
                 # NPL edge case, fix EPA_ID
@@ -343,14 +350,14 @@ def generate_fire_report(irwin_id, perimeter_id, token, config_settings: dict):
                     npl_polys = [x for x in config_settings['FACILITY_LAYERS'] if
                                  x['name'] == 'NationalPriorityListBoundaryTypes_R9_2020_R9'][0]
                     npl_poly_ids = \
-                    FeatureLayer(npl_polys['url']).query(out_fields=['EPA_ID'], return_geometry=False, as_df=True)[
-                        'EPA_ID'].to_list()
+                        FeatureLayer(npl_polys['url']).query(out_fields=['EPA_ID'], return_geometry=False, as_df=True)[
+                            'EPA_ID'].to_list()
                     print(f'npl poly ids : {npl_poly_ids}')
                     print('processing npl pts')
                     for lyr in lyrs:
                         removeRows(target_lyr=lyr, deletes=npl_poly_ids, target_field='EPA_ID')
                 for lyr_i, lyr in enumerate(lyrs):
-                    sheet_index = ptLayer['sheet_index']+lyr_i
+                    sheet_index = ptLayer['sheet_index'] + lyr_i
                     populate_sheet(wb, sheet_index, ptLayer, fire_name, lyr)
                     feature_count = len(lyr.features) if lyr.features else 0
                     response['facilities'][fl_name] += feature_count
@@ -482,14 +489,14 @@ def update_unarchived_fires(irwin_fires, perimeter_fires, config_settings: dict,
         if p['attributes'].get('IRWINID', None) is not None:
             for fire in notifiable_fires:
                 if fire['attributes'].get('Archived') is None and fire['attributes'].get('Data').get(
-                    'IRWINID').lower() == p['attributes'].get('IRWINID').lower():
+                        'IRWINID').lower() == p['attributes'].get('IRWINID').lower():
                     og_fire = deepcopy(fire)
                     fire['attributes']['Data']['perimeter_id'] = p['attributes'].get('GeometryID')
                     fire_name = p['attributes'].get('IncidentName') if p['attributes'].get('IncidentName') else ''
                     fire['attributes']['Data']['IncidentName'] = fire_name.upper()
                     # only update acres if missing (prefer get from irwin)
                     if fire['attributes']['Data'].get('acres', None) is None or fire['attributes'].get('Data').get(
-                        'acres') == '':
+                            'acres') == '':
                         fire['attributes']['Data']['acres'] = p['attributes'].get('GISAcres')
                     if force_update or fire != og_fire:
                         [fire_updates.remove(x) for x in fire_updates if
@@ -508,7 +515,7 @@ def update_unarchived_fires(irwin_fires, perimeter_fires, config_settings: dict,
     for p in perimeters:
         for fire in notifiable_fires:
             if fire['attributes'].get('Archived') is None and fire['attributes'].get('Data').get(
-                'perimeter_id').lower() == p['attributes'].get('GeometryID').lower():
+                    'perimeter_id').lower() == p['attributes'].get('GeometryID').lower():
                 og_fire = deepcopy(fire)
                 fire['attributes']['Data']['IRWINID'] = p['attributes']['IRWINID']
                 # fire['attributes']['Data']['_geometry'] = p['geometry']
@@ -528,7 +535,7 @@ def update_unarchived_fires(irwin_fires, perimeter_fires, config_settings: dict,
             fire_irwin_id = fire['attributes'].get('Data').get('IRWINID', None)
             fire_perim_id = fire['attributes'].get('Data').get('perimeter_id', None)
             if fire_irwin_id is None or fire_irwin_id in irwin_ids_fallen_off and not any(
-                x['attributes'].get('GeometryID') == fire_perim_id for x in perimeters):
+                    x['attributes'].get('GeometryID') == fire_perim_id for x in perimeters):
                 # f['attributes']['Archived'] = int(dt.now().timestamp()*1000)
                 fire['attributes']['Archived'] = int(dt.utcnow().timestamp() * 1000)
                 # fire['attributes']['Display'] = 0
@@ -798,6 +805,7 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
     py_script = open(input_file, 'r')
     py_script_contents = py_script.read()
     py_script.close()
+
     lines = py_script_contents.split('\n')
     if input_func:
         for func_file in input_func:
@@ -806,18 +814,17 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
                 import_line = import_line[0]
                 with open(func_file, 'r') as file:
                     file_contents = file.read()
-                    edits = py_script_contents.replace(import_line, '\n'+file_contents+'\n')
+                    utc_now = dt.utcnow().strftime('%x at %X UTC')
+                    markdown = f"\n# %% [markdown] \n ##Updated {utc_now}\n"
+                    edits = py_script_contents.replace(import_line, '\n' + file_contents + '\n')
+
                     with open(input_file, 'w') as py_script:
                         py_script.write(edits)
-
-                # file.close()
-    # f.close()
 
     basename = os.path.basename(input_file).split('.')[0]
     ipynb_output = input_file.replace('.py', '.ipynb')
     if os.path.basename(input_file).split('.')[1] == "py":
         input_py = jupytext.read(input_file)
-        # ipynb_name = fname + '.ipynb'
         jupytext.write(input_py, ipynb_output)
     if not os.path.exists(ipynb_output):
         raise Exception('error generating ipynb')
@@ -839,9 +846,8 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
     else:
         if not item_properties:
             item_properties = {'title': basename,
-                          'type': 'Notebook',
+                               'type': 'Notebook',
                                'tags': f'{basename},notebook,autodeploy'}
         print('creating new notebook')
         item = gis.content.add(item_properties=item_properties, data=ipynb_output)
-    print(item)
     return item
