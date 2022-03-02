@@ -1,5 +1,7 @@
 //  Pipeline to update agol content
-def notebook_scripts = ['notebooks/R9_Fires.py']
+def notebook_script = 'notebooks/R9_Fires.py'
+def func_script = 'notebooks/func.py'
+def working_dir = 'notebooks'
 // returns a list of changed files
 @NonCPS
 String getChangedFilesList() {
@@ -25,18 +27,19 @@ pipeline {
         stage('dynamic stages') {
             steps {
                 script {
-                    notebook_scripts.each {nbscript ->
-                        try {
-                            stage("deploy ipynb $nbscript") {
-                                // if (getChangedFilesList().contains(nbscript)){
-                                    withEnv(["HOME=${env.WORKSPACE}"]) {
-                                    sh 'python --version'
-                                    sh 'pip install -r notebooks/requirements.txt --user'
-                                    sh "python -m pytest notebooks/tests"
-                                    sh 'python -c "import sys; print(sys.path)"'
-                                    sh "python -c 'from notebooks.func import update_ipynb; update_ipynb(\"$nbscript\", \"$agol_creds_USR\", \"$agol_creds_PSW\", input_func=[\"notebooks/func.py\"])'"
-                                    }
-                                // }
+                    sh 'echo working dir: $changed'
+                    changed="$(git diff --quiet main origin/main -- $working_dir || echo changed)"
+                    sh 'echo $changed'
+
+                    if (changed='changed'){
+                            stage("deploy ipynb $notebook_script") {
+                                withEnv(["HOME=${env.WORKSPACE}"]) {
+                                sh 'python --version'
+                                sh 'pip install -r notebooks/requirements.txt --user'
+                                sh "python -m pytest notebooks/tests"
+                                sh 'python -c "import sys; print(sys.path)"'
+                                sh "python -c 'from notebooks.func import update_ipynb; update_ipynb(\"$notebook_script\", \"$agol_creds_USR\", \"$agol_creds_PSW\", input_func=[\"notebooks/func.py\"])'"
+                                }
                             }
                         } catch (Exception e) {
                             echo e.toString()
