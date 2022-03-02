@@ -1,22 +1,8 @@
 //  Pipeline to update agol content
 def notebook_script = 'notebooks/R9_Fires.py'
-def func_script = 'notebooks/func.py'
+def func_script = ['notebooks/func.py']
 def working_dir = 'notebooks'
-// returns a list of changed files
-@NonCPS
-String getChangedFilesList() {
-
-    changedFiles = []
-    for (changeLogSet in currentBuild.changeSets) {
-        for (entry in changeLogSet.getItems()) { // for each commit in the detected changes
-            for (file in entry.getAffectedFiles()) {
-                changedFiles.add(file.getPath()) // add changed file to list
-            }
-        }
-    }
-    return changedFiles
-
-}
+def changed=0
 
 pipeline {
     agent { docker { image 'python:3.7.9' } }
@@ -28,18 +14,24 @@ pipeline {
             steps {
                 script {
                 try {
-                    sh 'echo working dir: $changed'
-                    sh 'changed="$(git diff --quiet main origin/main -- $working_dir || echo changed)"'
-                    sh 'echo $changed'
+                    echo "working dir: $working_dir"
+                    changed = sh (script:"git diff --quiet main origin/main -- $working_dir || echo 'changed'", returnStdout:true)
+                    echo "changed: ${changed}"
+                    if (changed.trim() == "changed"){
+                        echo 'is changed'
+                    } else {
+                        echo 'not changed'
+                    }
 
-                    if ($changed=='changed'){
+                    if (changed.trim()=="changed"){
+                        echo 'proceeding...'
                             stage("deploy ipynb $notebook_script") {
                                 withEnv(["HOME=${env.WORKSPACE}"]) {
                                 sh 'python --version'
                                 sh 'pip install -r notebooks/requirements.txt --user'
                                 sh "python -m pytest notebooks/tests"
                                 sh 'python -c "import sys; print(sys.path)"'
-                                sh "python -c 'from notebooks.func import update_ipynb; update_ipynb(\"$notebook_script\", \"$agol_creds_USR\", \"$agol_creds_PSW\", input_func=[\"notebooks/func.py\"])'"
+                                sh "python -c 'from notebooks.func import update_ipynb; update_ipynb(\"$notebook_script\", \"$agol_creds_USR\", \"$agol_creds_PSW\", input_func=\"$func_script\")'"
                                 }
                             }
                     }
