@@ -28,7 +28,7 @@ pipeline {
             steps {
                 script {
                     sh 'echo working dir: $changed'
-                    changed="$(git diff --quiet main origin/main -- $working_dir || echo changed)"
+                    sh 'changed="$(git diff --quiet main origin/main -- $working_dir || echo changed)"'
                     sh 'echo $changed'
 
                     if (changed='changed'){
