@@ -43,11 +43,10 @@ pipeline {
                                 }
                             }
                     }
-                        } catch (Exception e) {
-                            echo e.toString()
-
-                        }
+                    } catch (Exception e) {
+                        echo e.toString()
                     }
+
                 }
             }
         }
