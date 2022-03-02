@@ -33,6 +33,7 @@ pipeline {
                         echo 'true true true'
                         } else {
                         echo 'false false false'
+                        }
 
                 }
             }
