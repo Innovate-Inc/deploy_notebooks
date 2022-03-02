@@ -31,7 +31,7 @@ pipeline {
                     sh 'changed="$(git diff --quiet main origin/main -- $working_dir || echo changed)"'
                     sh 'echo $changed'
 
-                    if (changed='changed'){
+                    if ($changed=='changed'){
                             stage("deploy ipynb $notebook_script") {
                                 withEnv(["HOME=${env.WORKSPACE}"]) {
                                 sh 'python --version'
