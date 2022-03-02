@@ -29,8 +29,10 @@ pipeline {
             steps {
                 script {
                     echo "${getChangedFilesList()}"
-                    if (getChangedFilesList().any{file -> file.contains('notebooks/')}) {
+                    if (getChangedFilesList().any{file -> file.contains("notebooks/")}) {
                         echo 'true true true'
+                        } else {
+                        echo 'false false false'
 
                 }
             }
