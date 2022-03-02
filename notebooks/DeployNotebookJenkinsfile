@@ -27,6 +27,7 @@ pipeline {
         stage('dynamic stages') {
             steps {
                 script {
+                try {
                     sh 'echo working dir: $changed'
                     sh 'changed="$(git diff --quiet main origin/main -- $working_dir || echo changed)"'
                     sh 'echo $changed'
@@ -41,6 +42,7 @@ pipeline {
                                 sh "python -c 'from notebooks.func import update_ipynb; update_ipynb(\"$notebook_script\", \"$agol_creds_USR\", \"$agol_creds_PSW\", input_func=[\"notebooks/func.py\"])'"
                                 }
                             }
+                    }
                         } catch (Exception e) {
                             echo e.toString()
 
