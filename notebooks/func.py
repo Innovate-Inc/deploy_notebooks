@@ -795,6 +795,8 @@ def update_custom_poi(token, config_settings: dict, id_field='GlobalID'):
 
 
 def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=None, input_func=[]):
+    print(f'input_file: {input_file}')
+    print(f'input_func: {", ".join(input_func)}')
     if input_func is None:
         input_func = []
     gis = GIS(username=agol_un, password=agol_pw)
