@@ -1,6 +1,6 @@
 //  Pipeline to update agol notebook
 def notebook_script = 'notebooks/R9_Fires.py'
-def func_script = ['notebooks/func.py']
+def func_script = 'notebooks/func.py'
 def working_dir = 'notebooks'
 def changed=0
 
