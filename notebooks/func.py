@@ -794,7 +794,7 @@ def update_custom_poi(token, config_settings: dict, id_field='GlobalID'):
     return
 
 
-def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=None, input_func=[]):
+def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=None, input_func=None):
     print(f'input_file: {input_file}')
     print(f'input_func: {", ".join(input_func)}')
     if input_func is None:
@@ -806,18 +806,18 @@ def update_ipynb(input_file, agol_un, agol_pw, agol_id=None, item_properties=Non
 
     lines = py_script_contents.split('\n')
     if input_func:
-        for func_file in input_func:
-            import_line = [l for l in lines if func_file.split('/')[1].split('.')[0] in l and 'import' in l]
-            if import_line:
-                import_line = import_line[0]
-                with open(func_file, 'r') as file:
-                    file_contents = file.read()
-                    utc_now = dt.utcnow().strftime('%x at %X UTC')
-                    markdown = f"# %% [markdown] \n ## Updated {utc_now}\n"
-                    edits = markdown + py_script_contents.replace(import_line, file_contents + '\n')
 
-                    with open(input_file, 'w') as py_script:
-                        py_script.write(edits)
+        import_line = [l for l in lines if input_func.split('/')[1].split('.')[0] in l and 'import' in l]
+        if import_line:
+            import_line = import_line[0]
+            with open(input_func, 'r') as file:
+                file_contents = file.read()
+                utc_now = dt.utcnow().strftime('%x at %X UTC')
+                markdown = f"# %% [markdown] \n ## Updated {utc_now}\n"
+                edits = markdown + py_script_contents.replace(import_line, file_contents + '\n')
+
+                with open(input_file, 'w') as py_script:
+                    py_script.write(edits)
 
     basename = os.path.basename(input_file).split('.')[0]
     ipynb_output = input_file.replace('.py', '.ipynb')
